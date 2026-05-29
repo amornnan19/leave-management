@@ -29,11 +29,13 @@ class HolidaySeeder extends Seeder
             ['name' => "New Year's Eve", 'date' => '2026-12-31', 'is_recurring' => true],
         ];
 
+        // Match on the date with whereDate(): the `date` cast stores values as
+        // 'Y-m-d 00:00:00' in SQLite, so a plain firstOrCreate(['date' => 'Y-m-d'])
+        // never matches an existing row and would attempt a duplicate insert.
         foreach ($holidays as $holiday) {
-            Holiday::firstOrCreate(
-                ['date' => $holiday['date']],
-                $holiday
-            );
+            if (! Holiday::whereDate('date', $holiday['date'])->exists()) {
+                Holiday::create($holiday);
+            }
         }
     }
 }

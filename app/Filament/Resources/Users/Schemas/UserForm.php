@@ -3,11 +3,13 @@
 namespace App\Filament\Resources\Users\Schemas;
 
 use App\Enums\UserRole;
+use App\Models\Department;
 use App\Models\User;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
+use Illuminate\Database\Eloquent\Builder;
 
 class UserForm
 {
@@ -40,13 +42,42 @@ class UserForm
                     ->relationship(name: 'department', titleAttribute: 'name')
                     ->searchable()
                     ->preload()
+                    ->exists(table: Department::class, column: 'id')
                     ->nullable(),
 
                 Select::make('manager_id')
                     ->label('Manager')
-                    ->relationship(name: 'manager', titleAttribute: 'name')
+                    ->relationship(
+                        name: 'manager',
+                        titleAttribute: 'name',
+                        modifyQueryUsing: fn (Builder $query, ?User $record) => $query
+                            ->whereIn('role', [UserRole::Manager->value, UserRole::Hr->value])
+                            ->when($record, fn ($q) => $q->whereKeyNot($record->getKey())),
+                    )
                     ->searchable()
                     ->preload()
+                    ->exists(table: User::class, column: 'id')
+                    ->rules([
+                        fn (?User $record): \Closure => static function (string $attribute, mixed $value, \Closure $fail) use ($record): void {
+                            if ($value === null || $value === '') {
+                                return;
+                            }
+
+                            if ($record && (int) $value === $record->getKey()) {
+                                $fail('A user cannot be their own manager.');
+
+                                return;
+                            }
+
+                            // Enforce the manager's role server-side (not only via the option
+                            // list) so a tampered manager_id pointing at an Employee is rejected.
+                            $manager = User::find($value);
+
+                            if ($manager && ! in_array($manager->role, [UserRole::Manager, UserRole::Hr], true)) {
+                                $fail('The selected manager must be a Manager or HR user.');
+                            }
+                        },
+                    ])
                     ->nullable(),
 
                 TextInput::make('employee_code')

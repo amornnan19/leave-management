@@ -4,6 +4,7 @@ namespace App\Filament\Resources\LeaveRequests\Tables;
 
 use App\Enums\LeaveStatus;
 use App\Models\LeaveRequest;
+use App\Services\LeaveRequestNotifier;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -83,6 +84,8 @@ class LeaveRequestsTable
                             'approved_at' => now(),
                         ]);
 
+                        app(LeaveRequestNotifier::class)->approved($record);
+
                         Notification::make()
                             ->title('Leave request approved')
                             ->success()
@@ -115,6 +118,8 @@ class LeaveRequestsTable
                             'approved_at' => now(),
                             'rejection_reason' => $data['rejection_reason'],
                         ]);
+
+                        app(LeaveRequestNotifier::class)->rejected($record);
 
                         Notification::make()
                             ->title('Leave request rejected')

@@ -12,7 +12,11 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Coolify (and most reverse proxies) terminate TLS and forward to the
+        // container over plain HTTP with X-Forwarded-* headers. Trust them so
+        // Laravel/Filament generate correct https:// URLs (assets, Livewire
+        // endpoints, redirects) — otherwise assets are blocked as mixed content.
+        $middleware->trustProxies(at: '*');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +20,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Behind Coolify's TLS-terminating proxy the app is served over HTTPS;
+        // force generated URLs (assets, Livewire) to https in production so the
+        // browser doesn't block them as mixed content.
+        if ($this->app->environment('production')) {
+            URL::forceScheme('https');
+        }
     }
 }

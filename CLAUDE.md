@@ -1,3 +1,44 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Status
+
+This is a **fresh, vanilla Laravel 13 application** scaffolded to become a leave-management system. As of now it contains only the framework skeleton — there is no domain code yet (no leave/employee models, controllers, or routes beyond the default `welcome` page). When building features, follow the Laravel conventions in the Boost guidelines below; there are no existing domain patterns to mirror.
+
+## Stack
+
+- PHP 8.4, Laravel 13, Pest 4 (testing), Tailwind CSS v4 + Vite (frontend), Laravel Boost 2 (MCP/AI tooling)
+- **SQLite** for database, cache, session, and queue (`database/database.sqlite`). There is no external DB/Redis — everything is database/file driven for local dev.
+- Served by **Laravel Herd** at `https://leave-management.test` (use the `get-absolute-url` Boost tool to build URLs; never run `php artisan serve`).
+
+## Commands
+
+```bash
+# Full dev environment (server + queue worker + log tailer + vite, concurrently)
+composer run dev
+
+# Tests (Pest)
+php artisan test --compact                          # all tests
+php artisan test --compact --filter=testName        # single test by name
+composer run test                                   # clears config then runs tests
+
+# Lint / format (run before finalizing any PHP change)
+vendor/bin/pint --dirty --format agent              # format only changed files
+
+# Frontend build
+npm run dev                                         # vite dev server
+npm run build                                       # production build
+
+# First-time / reset setup
+composer run setup                                  # install, key:gen, migrate, npm build
+```
+
+## Testing Notes
+
+- Tests run against an **in-memory SQLite database** (`:memory:`, see `phpunit.xml`), isolated from the dev `database.sqlite`.
+- Pest config and shared setup live in `tests/Pest.php` and `tests/TestCase.php`. Use `php artisan make:test --pest {Name}` to create new feature tests.
+
 <laravel-boost-guidelines>
 === foundation rules ===
 

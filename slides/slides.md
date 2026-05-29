@@ -6,7 +6,7 @@ info: |
 class: text-center
 highlighter: shiki
 transition: slide-left
-mdc: true
+# mdc: true
 fonts:
   sans: Inter
   mono: JetBrains Mono

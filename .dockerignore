@@ -8,6 +8,9 @@
 node_modules
 /public/build
 
+# Slidev presentation deck — not part of the deployed app
+/slides
+
 # PHP dependencies (re-installed in the image)
 /vendor
 

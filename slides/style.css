@@ -1,0 +1,82 @@
+/* ── GhostShift theme for the Leave Management deck ───────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  --void:     #06070A;
+  --obsidian: #0C0E13;
+  --graphite: #14171E;
+  --ash:      #262B35;
+  --fog:      #7B828F;
+  --mist:     #C5CBD4;
+  --bone:     #F4F6FA;
+  --spectre:  #34F5C5;
+  --phantom:  #6D5DFC;
+  --signal:   #FF4D6D;
+
+  --slidev-theme-primary: #34F5C5;
+}
+
+.slidev-layout {
+  background-color: var(--void);
+  color: var(--mist);
+  font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  /* faint grain texture, GhostShift signature */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+}
+
+.slidev-layout h1,
+.slidev-layout h2,
+.slidev-layout h3 {
+  font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  color: var(--bone);
+  letter-spacing: -0.02em;
+  font-weight: 700;
+}
+
+.slidev-layout h1 { font-size: 2.6rem; line-height: 1.1; }
+.slidev-layout h2 { color: var(--bone); }
+
+.slidev-layout a { color: var(--spectre); }
+.slidev-layout strong { color: var(--bone); }
+.slidev-layout code { font-family: 'JetBrains Mono', monospace; color: var(--spectre); }
+
+/* Utilities used in the deck */
+.text-grad {
+  background: linear-gradient(135deg, #34F5C5 0%, #6D5DFC 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.mono-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--spectre);
+  opacity: 0.85;
+}
+
+.card {
+  background: var(--graphite);
+  border: 1px solid var(--ash);
+  border-radius: 0.6rem;
+  padding: 0.9rem 1.1rem;
+}
+
+.fog  { color: var(--fog); }
+.mist { color: var(--mist); }
+.teal { color: var(--spectre); }
+.purple { color: var(--phantom); }
+
+/* Cover */
+.slidev-layout.cover, .slidev-layout.intro {
+  background: radial-gradient(ellipse at 50% 0%, rgba(52,245,197,0.08), transparent 60%), var(--void);
+}
+
+/* code blocks */
+.slidev-layout pre, .slidev-layout .slidev-code {
+  background: var(--obsidian) !important;
+  border: 1px solid var(--ash);
+  border-radius: 0.5rem;
+}

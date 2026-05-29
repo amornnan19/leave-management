@@ -80,3 +80,10 @@
   border: 1px solid var(--ash);
   border-radius: 0.5rem;
 }
+
+/* Slidev 0.49 quirk: the closed "go to slide" dialog (off-screen at -top-20)
+   still renders its autocomplete dropdown, which overflows into the top-right
+   of every slide. Only show it while the dialog is actually focused (opened
+   with the `g` key). */
+#slidev-goto-dialog .autocomplete-list { display: none; }
+#slidev-goto-dialog:focus-within .autocomplete-list { display: block; }

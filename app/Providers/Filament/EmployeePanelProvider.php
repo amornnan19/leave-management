@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use Filament\Enums\ThemeMode;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -26,8 +27,23 @@ class EmployeePanelProvider extends PanelProvider
             ->id('employee')
             ->path('portal')
             ->login()
+            ->font('Space Grotesk')
+            ->defaultThemeMode(ThemeMode::Dark)
             ->colors([
-                'primary' => Color::Emerald,
+                'primary' => Color::hex('#6D5DFC'),
+                'gray' => [
+                    50 => 'oklch(0.973 0.006 264.533)',
+                    100 => 'oklch(0.930 0.010 261.788)',
+                    200 => 'oklch(0.840 0.014 258.349)',
+                    300 => 'oklch(0.729 0.020 258.362)',
+                    400 => 'oklch(0.605 0.021 262.954)',
+                    500 => 'oklch(0.491 0.021 261.287)',
+                    600 => 'oklch(0.382 0.020 262.619)',
+                    700 => 'oklch(0.288 0.020 264.199)',
+                    800 => 'oklch(0.226 0.017 264.158)',
+                    900 => 'oklch(0.164 0.011 268.006)',
+                    950 => 'oklch(0.129 0.008 268.543)',
+                ],
             ])
             ->databaseNotifications()
             ->databaseNotificationsPolling('30s')

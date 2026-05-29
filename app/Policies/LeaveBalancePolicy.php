@@ -9,6 +9,10 @@ class LeaveBalancePolicy
 {
     /**
      * Determine whether the user can view any models.
+     *
+     * HR-only at the model level: the admin LeaveBalanceResource is not query-scoped,
+     * so Managers must not see the company-wide balance list here. The employee portal
+     * exposes own-balances by overriding canViewAny() on its own scoped resource.
      */
     public function viewAny(User $user): bool
     {
@@ -17,10 +21,16 @@ class LeaveBalancePolicy
 
     /**
      * Determine whether the user can view the model.
+     *
+     * HR sees all; an employee can see their own balance row.
      */
     public function view(User $user, LeaveBalance $leaveBalance): bool
     {
-        return $user->isHr();
+        if ($user->isHr()) {
+            return true;
+        }
+
+        return $leaveBalance->user_id === $user->id;
     }
 
     /**

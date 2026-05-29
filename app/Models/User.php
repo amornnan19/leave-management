@@ -88,6 +88,10 @@ class User extends Authenticatable implements FilamentUser
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->isHr() || $this->isManager();
+        return match ($panel->getId()) {
+            'admin' => $this->isHr() || $this->isManager(),
+            'employee' => true, // everyone can use the self-service portal
+            default => false,
+        };
     }
 }

@@ -2,4 +2,4 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', fn () => view('landing'))->name('home');
+Route::view('/', 'landing')->name('home');

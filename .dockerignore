@@ -1,0 +1,44 @@
+# Version control
+.git
+.github
+.gitignore
+.gitattributes
+
+# Node / frontend build artefacts (no Vite in production)
+node_modules
+/public/build
+
+# PHP dependencies (re-installed in the image)
+/vendor
+
+# Stale package-discovery cache from local dev (references dev-only providers
+# like Laravel Boost which aren't installed with --no-dev). Rebuilt in-image.
+bootstrap/cache/*.php
+
+# Environment secrets — NEVER bake .env into the image
+.env
+.env.*
+!.env.example
+
+# Local SQLite database — lives on a persistent volume, not in the image
+database/database.sqlite
+
+# Local storage uploads — provided via persistent volume at runtime
+/storage/app/**
+
+# Test suite (not needed in production image)
+/tests
+.phpunit.result.cache
+phpunit.xml
+
+# IDE / editor config
+/.fleet
+/.idea
+/.vscode
+
+# Optional: markdown docs
+*.md
+
+# Local dev tooling
+/node_modules
+package-lock.json

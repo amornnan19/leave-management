@@ -493,3 +493,110 @@ test('missing start_date skips overlap and min notice checks gracefully', functi
 
     expect($errors)->not->toHaveKey('start_date');
 });
+
+// ---------------------------------------------------------------------------
+// Edit-time: self-exclusion via ignoreLeaveRequestId
+// ---------------------------------------------------------------------------
+
+test('overlap: editing a request to the same dates does not flag overlap against itself', function (): void {
+    $user = User::factory()->create();
+    $leaveType = LeaveType::factory()->create(['is_paid' => false, 'min_notice_days' => 0]);
+
+    $existing = LeaveRequest::factory()->create([
+        'user_id' => $user->id,
+        'leave_type_id' => $leaveType->id,
+        'start_date' => '2026-06-15',
+        'end_date' => '2026-06-17',
+        'status' => LeaveStatus::Pending,
+        'total_days' => 3.0,
+    ]);
+
+    // Editing the same request to its own dates — should NOT flag overlap
+    $data = makeRequestData($user, $leaveType, '2026-06-15', '2026-06-17', 3.0);
+    $errors = leaveValidator()->validate($data, $existing->id);
+
+    expect($errors)->not->toHaveKey('start_date');
+});
+
+test('overlap: without ignore id, same request still flags overlap (regression)', function (): void {
+    $user = User::factory()->create();
+    $leaveType = LeaveType::factory()->create(['is_paid' => false, 'min_notice_days' => 0]);
+
+    LeaveRequest::factory()->create([
+        'user_id' => $user->id,
+        'leave_type_id' => $leaveType->id,
+        'start_date' => '2026-06-15',
+        'end_date' => '2026-06-17',
+        'status' => LeaveStatus::Pending,
+        'total_days' => 3.0,
+    ]);
+
+    $data = makeRequestData($user, $leaveType, '2026-06-15', '2026-06-17', 3.0);
+    $errors = leaveValidator()->validate($data);
+
+    expect($errors)->toHaveKey('start_date');
+});
+
+test('balance: editing an approved request within its own balance passes (no double-count)', function (): void {
+    $user = User::factory()->create();
+    $leaveType = LeaveType::factory()->create([
+        'is_paid' => true,
+        'min_notice_days' => 0,
+        'max_consecutive_days' => null,
+    ]);
+    LeaveBalance::factory()->create([
+        'user_id' => $user->id,
+        'leave_type_id' => $leaveType->id,
+        'year' => 2026,
+        'entitled_days' => 5.0,
+        'carried_over_days' => 0.0,
+    ]);
+
+    // 3-day approved request — uses 3 of 5 days
+    $approved = LeaveRequest::factory()->create([
+        'user_id' => $user->id,
+        'leave_type_id' => $leaveType->id,
+        'start_date' => '2026-06-15',
+        'end_date' => '2026-06-17',
+        'status' => LeaveStatus::Approved,
+        'total_days' => 3.0,
+    ]);
+
+    // Editing that request to 4 days — remaining after excluding itself is 5, so 4 should pass
+    $data = makeRequestData($user, $leaveType, '2026-06-15', '2026-06-18', 4.0);
+    $errors = leaveValidator()->validate($data, $approved->id);
+
+    expect($errors)->not->toHaveKey('leave_type_id');
+});
+
+test('balance: editing an approved request to exceed total balance is blocked', function (): void {
+    $user = User::factory()->create();
+    $leaveType = LeaveType::factory()->create([
+        'is_paid' => true,
+        'min_notice_days' => 0,
+        'max_consecutive_days' => null,
+    ]);
+    LeaveBalance::factory()->create([
+        'user_id' => $user->id,
+        'leave_type_id' => $leaveType->id,
+        'year' => 2026,
+        'entitled_days' => 5.0,
+        'carried_over_days' => 0.0,
+    ]);
+
+    $approved = LeaveRequest::factory()->create([
+        'user_id' => $user->id,
+        'leave_type_id' => $leaveType->id,
+        'start_date' => '2026-06-15',
+        'end_date' => '2026-06-17',
+        'status' => LeaveStatus::Approved,
+        'total_days' => 3.0,
+    ]);
+
+    // Editing to 6 days — balance is 5, should fail
+    $data = makeRequestData($user, $leaveType, '2026-06-15', '2026-06-20', 6.0);
+    $errors = leaveValidator()->validate($data, $approved->id);
+
+    expect($errors)->toHaveKey('leave_type_id')
+        ->and($errors['leave_type_id'])->toContain('Insufficient balance');
+});

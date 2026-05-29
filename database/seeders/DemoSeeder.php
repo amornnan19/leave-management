@@ -202,9 +202,41 @@ class DemoSeeder extends Seeder
                 'approver_id' => null,
                 'approved_at' => null,
             ]);
+
+            // Request 4: APPROVED PM half-day — emp.eng2 (Diana) on 2026-05-19 (Tuesday)
+            // start_period = Afternoon → works morning, off afternoon → PM label
+            $halfDayPmDate = Carbon::parse('2026-05-19');
+
+            $this->createLeaveRequestIfAbsent($empEng2->id, $halfDayPmDate, [
+                'leave_type_id' => $annualLeave->id,
+                'end_date' => $halfDayPmDate->toDateString(),
+                'start_period' => DayPeriod::Afternoon,
+                'end_period' => DayPeriod::Afternoon,
+                'total_days' => 0.5,
+                'reason' => 'Afternoon errand',
+                'status' => LeaveStatus::Approved,
+                'approver_id' => $managerEng->id,
+                'approved_at' => now(),
+            ]);
+
+            // Request 5: APPROVED AM half-day — emp.sales2 (Fiona) on 2026-05-20 (Wednesday)
+            // start_period = Morning → off morning, works afternoon → AM label
+            $halfDayAmDate = Carbon::parse('2026-05-20');
+
+            $this->createLeaveRequestIfAbsent($empSales2->id, $halfDayAmDate, [
+                'leave_type_id' => $annualLeave->id,
+                'end_date' => $halfDayAmDate->toDateString(),
+                'start_period' => DayPeriod::Morning,
+                'end_period' => DayPeriod::Morning,
+                'total_days' => 0.5,
+                'reason' => 'Morning appointment',
+                'status' => LeaveStatus::Approved,
+                'approver_id' => $managerSales->id,
+                'approved_at' => now(),
+            ]);
         }
 
-        $this->command->info('Demo data seeded: 2 departments, 2 managers, 4 employees, balances generated, 3 sample leave requests.');
+        $this->command->info('Demo data seeded: 2 departments, 2 managers, 4 employees, balances generated, 5 sample leave requests (including 2 half-days).');
     }
 
     /**

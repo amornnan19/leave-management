@@ -17,7 +17,7 @@ test('seeding is idempotent and wires demo relationships correctly', function ()
     // 1 HR + 2 managers + 4 employees
     expect(User::count())->toBe(7)
         ->and(Department::count())->toBe(2)
-        ->and(LeaveRequest::count())->toBe(3);
+        ->and(LeaveRequest::count())->toBe(5);
 
     // Department head points at the right manager.
     $engineering = Department::where('code', 'ENG')->firstOrFail();

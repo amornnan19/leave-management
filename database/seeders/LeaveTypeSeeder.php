@@ -21,6 +21,7 @@ class LeaveTypeSeeder extends Seeder
                 'requires_attachment' => false,
                 'default_days_per_year' => 10.0,
                 'max_consecutive_days' => null,
+                'min_notice_days' => 3,
                 'is_active' => true,
             ],
             [
@@ -31,6 +32,7 @@ class LeaveTypeSeeder extends Seeder
                 'requires_attachment' => true,
                 'default_days_per_year' => 30.0,
                 'max_consecutive_days' => null,
+                'min_notice_days' => 0,
                 'is_active' => true,
             ],
             [
@@ -41,6 +43,7 @@ class LeaveTypeSeeder extends Seeder
                 'requires_attachment' => false,
                 'default_days_per_year' => 3.0,
                 'max_consecutive_days' => null,
+                'min_notice_days' => 0,
                 'is_active' => true,
             ],
             [
@@ -51,6 +54,7 @@ class LeaveTypeSeeder extends Seeder
                 'requires_attachment' => false,
                 'default_days_per_year' => 98.0,
                 'max_consecutive_days' => 98,
+                'min_notice_days' => 0,
                 'is_active' => true,
             ],
             [
@@ -61,6 +65,7 @@ class LeaveTypeSeeder extends Seeder
                 'requires_attachment' => false,
                 'default_days_per_year' => 0.0,
                 'max_consecutive_days' => null,
+                'min_notice_days' => 0,
                 'is_active' => true,
             ],
         ];

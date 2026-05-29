@@ -6,8 +6,10 @@ use App\Enums\DayPeriod;
 use App\Enums\LeaveStatus;
 use App\Filament\Resources\LeaveRequests\LeaveRequestResource;
 use App\Services\LeaveDayCalculator;
+use App\Services\LeaveRequestValidator;
 use Carbon\Carbon;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Validation\ValidationException;
 
 class CreateLeaveRequest extends CreateRecord
 {
@@ -27,6 +29,20 @@ class CreateLeaveRequest extends CreateRecord
                 $this->normalizeDayPeriod($data['start_period'] ?? null),
                 $this->normalizeDayPeriod($data['end_period'] ?? null),
             );
+        }
+
+        /** @var LeaveRequestValidator $validator */
+        $validator = app(LeaveRequestValidator::class);
+        $violations = $validator->validate($data);
+
+        if ($violations !== []) {
+            // Prefix each key with "data." so Filament maps errors to the correct form field inline
+            $prefixed = [];
+            foreach ($violations as $field => $message) {
+                $prefixed["data.{$field}"] = $message;
+            }
+
+            throw ValidationException::withMessages($prefixed);
         }
 
         return $data;

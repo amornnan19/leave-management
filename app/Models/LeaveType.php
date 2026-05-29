@@ -21,6 +21,7 @@ class LeaveType extends Model
         'requires_attachment',
         'default_days_per_year',
         'max_consecutive_days',
+        'min_notice_days',
         'is_active',
     ];
 
@@ -31,6 +32,7 @@ class LeaveType extends Model
             'requires_attachment' => 'boolean',
             'is_active' => 'boolean',
             'default_days_per_year' => 'decimal:1',
+            'min_notice_days' => 'integer',
         ];
     }
 

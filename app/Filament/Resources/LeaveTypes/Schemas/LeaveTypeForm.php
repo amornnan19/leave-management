@@ -45,6 +45,12 @@ class LeaveTypeForm
                     ->nullable()
                     ->minValue(1),
 
+                TextInput::make('min_notice_days')
+                    ->label('Min Notice Days')
+                    ->numeric()
+                    ->default(0)
+                    ->minValue(0),
+
                 Toggle::make('is_active')
                     ->label('Active')
                     ->default(true),

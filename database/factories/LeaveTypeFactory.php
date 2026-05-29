@@ -25,6 +25,7 @@ class LeaveTypeFactory extends Factory
             'requires_attachment' => false,
             'default_days_per_year' => fake()->randomFloat(1, 3, 15),
             'max_consecutive_days' => null,
+            'min_notice_days' => 0,
             'is_active' => true,
         ];
     }

@@ -6,6 +6,7 @@ use App\Enums\DayPeriod;
 use App\Enums\LeaveStatus;
 use App\Filament\Resources\LeaveRequests\LeaveRequestResource;
 use App\Services\LeaveDayCalculator;
+use App\Services\LeaveRequestNotifier;
 use App\Services\LeaveRequestValidator;
 use Carbon\Carbon;
 use Filament\Resources\Pages\CreateRecord;
@@ -46,6 +47,11 @@ class CreateLeaveRequest extends CreateRecord
         }
 
         return $data;
+    }
+
+    protected function afterCreate(): void
+    {
+        app(LeaveRequestNotifier::class)->submitted($this->record);
     }
 
     private function normalizeDayPeriod(mixed $value): DayPeriod

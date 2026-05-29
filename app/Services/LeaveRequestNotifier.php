@@ -2,11 +2,57 @@
 
 namespace App\Services;
 
+use App\Enums\UserRole;
 use App\Models\LeaveRequest;
+use App\Models\User;
 use Filament\Notifications\Notification;
 
 class LeaveRequestNotifier
 {
+    public function submitted(LeaveRequest $leaveRequest): void
+    {
+        $requester = $leaveRequest->user;
+
+        if (! $requester) {
+            return;
+        }
+
+        $leaveRequest->loadMissing('leaveType');
+
+        // Determine recipients: manager if set (and not the requester), otherwise all HR
+        // users excluding the requester.
+        $manager = $requester->manager;
+
+        if ($manager && $manager->id !== $requester->id) {
+            $recipients = collect([$manager]);
+        } else {
+            $recipients = User::query()
+                ->where('role', UserRole::Hr->value)
+                ->where('id', '!=', $requester->id)
+                ->get();
+        }
+
+        if ($recipients->isEmpty()) {
+            return;
+        }
+
+        $leaveTypeName = $leaveRequest->leaveType?->name ?? 'Leave';
+        $startDate = $leaveRequest->start_date->format('M j, Y');
+        $endDate = $leaveRequest->end_date->format('M j, Y');
+        $totalDays = $leaveRequest->total_days;
+
+        $body = "{$requester->name} requested {$leaveTypeName} for {$startDate}–{$endDate} ({$totalDays} day(s)) — pending approval.";
+
+        $notification = Notification::make()
+            ->title('New leave request')
+            ->warning()
+            ->body($body);
+
+        foreach ($recipients as $recipient) {
+            $recipient->notifyNow($notification->toDatabase());
+        }
+    }
+
     public function approved(LeaveRequest $leaveRequest): void
     {
         $user = $leaveRequest->user;

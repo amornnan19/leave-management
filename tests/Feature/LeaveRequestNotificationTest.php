@@ -196,3 +196,66 @@ test('notification is delivered synchronously even when the queue is database', 
     expect($owner->fresh()->notifications()->count())->toBe(1)
         ->and(DB::table('jobs')->count())->toBe(0);
 });
+
+// ---------------------------------------------------------------------------
+// Service: submitted()
+// ---------------------------------------------------------------------------
+
+test('submitted: requester has a manager — manager gets 1 notification, requester gets 0', function (): void {
+    $manager = User::factory()->manager()->create();
+    $employee = User::factory()->create(['manager_id' => $manager->id]);
+    $request = makePendingRequest($employee, 'Annual Leave');
+
+    app(LeaveRequestNotifier::class)->submitted($request);
+
+    expect($manager->fresh()->notifications()->count())->toBe(1)
+        ->and($employee->fresh()->notifications()->count())->toBe(0);
+});
+
+test('submitted: requester has no manager — all HR users get notified except the requester', function (): void {
+    $hr1 = User::factory()->hr()->create();
+    $hr2 = User::factory()->hr()->create();
+    $employee = User::factory()->create(['manager_id' => null]);
+    $request = makePendingRequest($employee, 'Sick Leave');
+
+    app(LeaveRequestNotifier::class)->submitted($request);
+
+    expect($hr1->fresh()->notifications()->count())->toBe(1)
+        ->and($hr2->fresh()->notifications()->count())->toBe(1)
+        ->and($employee->fresh()->notifications()->count())->toBe(0);
+});
+
+test('submitted: HR user with no manager submitting does not notify themselves', function (): void {
+    $hrRequester = User::factory()->hr()->create(['manager_id' => null]);
+    $otherHr = User::factory()->hr()->create();
+    $request = makePendingRequest($hrRequester, 'Annual Leave');
+
+    app(LeaveRequestNotifier::class)->submitted($request);
+
+    expect($hrRequester->fresh()->notifications()->count())->toBe(0)
+        ->and($otherHr->fresh()->notifications()->count())->toBe(1);
+});
+
+test('submitted: notification body contains requester name and leave type, not reason', function (): void {
+    $manager = User::factory()->manager()->create();
+    $employee = User::factory()->create(['manager_id' => $manager->id, 'name' => 'Jane Doe']);
+    $request = makePendingRequest($employee, 'Annual Leave');
+
+    app(LeaveRequestNotifier::class)->submitted($request);
+
+    $notification = $manager->fresh()->notifications()->first();
+    $data = $notification->data;
+
+    expect($data['body'])->toContain('Jane Doe')
+        ->and($data['body'])->toContain('Annual Leave')
+        ->and($data['body'])->not->toContain('reason');
+});
+
+test('submitted: no recipients — only HR user is the requester, no error thrown', function (): void {
+    // Only one HR user and they are the requester — no recipients, should not throw
+    $onlyHr = User::factory()->hr()->create(['manager_id' => null]);
+    $request = makePendingRequest($onlyHr, 'Annual Leave');
+
+    expect(fn () => app(LeaveRequestNotifier::class)->submitted($request))->not->toThrow(Throwable::class);
+    expect($onlyHr->fresh()->notifications()->count())->toBe(0);
+});

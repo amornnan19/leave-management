@@ -29,6 +29,7 @@ class EmployeePanelProvider extends PanelProvider
             ->id('employee')
             ->path('portal')
             ->login(Login::class)
+            ->brandLogo(fn () => view('filament.brand-logo'))
             ->font('Space Grotesk')
             ->defaultThemeMode(ThemeMode::Dark)
             ->colors([

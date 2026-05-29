@@ -31,6 +31,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login(Login::class)
+            ->brandLogo(fn () => view('filament.brand-logo'))
             ->font('Space Grotesk')
             ->defaultThemeMode(ThemeMode::Dark)
             ->colors([

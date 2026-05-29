@@ -6,6 +6,7 @@ use App\Models\LeaveType;
 use App\Models\User;
 use App\Services\LeaveRequestNotifier;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 
 uses(RefreshDatabase::class);
 
@@ -168,4 +169,30 @@ test('rejected does not throw when the leave request has no user', function (): 
     $request->setRelation('user', null);
 
     expect(fn () => app(LeaveRequestNotifier::class)->rejected($request))->not->toThrow(Throwable::class);
+});
+
+// ---------------------------------------------------------------------------
+// Regression: delivery must be synchronous even on the database queue
+// (the app runs on QUEUE_CONNECTION=database without a guaranteed worker)
+// ---------------------------------------------------------------------------
+
+test('notification is delivered synchronously even when the queue is database', function (): void {
+    config(['queue.default' => 'database']);
+
+    $owner = User::factory()->create();
+    $request = makePendingRequest($owner, 'Annual Leave');
+
+    $request->update([
+        'status' => LeaveStatus::Approved,
+        'approver_id' => User::factory()->hr()->create()->id,
+        'approved_at' => now(),
+    ]);
+
+    app(LeaveRequestNotifier::class)->approved($request);
+
+    // notifyNow() bypasses the queue: the row must exist immediately and nothing
+    // should be parked in the jobs table. (A regression to sendToDatabase() would
+    // queue the DatabaseNotification here, leaving 0 notifications + 1 job.)
+    expect($owner->fresh()->notifications()->count())->toBe(1)
+        ->and(DB::table('jobs')->count())->toBe(0);
 });
